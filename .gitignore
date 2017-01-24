@@ -10,3 +10,5 @@ build/
 /trustar.egg-info/
 /examples/trustar.conf
 /report_big.csv
+/trustar-python.iml
+trustar-python.iml

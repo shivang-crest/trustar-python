@@ -14,6 +14,7 @@ import dateutil.tz
 import pytz
 import requests
 import requests.auth
+import pandas as pd
 
 import pdfminer.pdfinterp
 from pdfminer.pdfpage import PDFPage
@@ -197,12 +198,21 @@ class TruStar(object):
         return text
 
     @staticmethod
+    def extract_excel(file_name):
+        f = open(file_name, 'rb')
+        excel_file_df = pd.read_excel(f, sheetname=0)
+        text = excel_file_df.to_string()
+        return text
+
+    @staticmethod
     def process_file(source_file):
         if source_file.endswith(('.pdf', '.PDF')):
             txt = TruStar.extract_pdf(source_file)
         elif source_file.endswith(('.txt', '.eml', '.csv', '.json')):
             f = open(source_file, 'r')
             txt = f.read()
+        elif source_file.endswith(('.xlsx', '.xls')):
+            txt = TruStar.extract_excel(source_file)
         else:
-            raise ValueError('UNSUPPORTED FILE EXTENSION')
+            raise ValueError('Extension unsupported for file: ' + source_file)
         return txt
