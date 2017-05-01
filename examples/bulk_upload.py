@@ -48,9 +48,17 @@ def main():
                 try:
                     path = os.path.join(source_report_dir, source_file)
                     report_body_txt = ts.process_file(path)
+                    if path.endswith('.eml'):
+                        email_date = ts.process_date_from_email(path)
+                        response_json = ts.submit_report(token,
+                                                         report_body_txt,
+                                                         "ENCLAVE: " + source_file,
+                                                         email_date,
+                                                         enclave=True)
+                    else:
+                        response_json = ts.submit_report(token, report_body_txt, "ENCLAVE: " + source_file, enclave=True)
 
                     # response_json = ts.submit_report(token, report_body_txt, "COMMUNITY: " + file)
-                    response_json = ts.submit_report(token, report_body_txt, "ENCLAVE: " + source_file, enclave=True)
                     report_id = response_json['reportId']
 
                     print("SUCCESSFULLY SUBMITTED REPORT, TRUSTAR REPORT as Incident Report ID %s" % report_id)
