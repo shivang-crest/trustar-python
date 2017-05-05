@@ -10,7 +10,6 @@ from datetime import datetime
 from tzlocal import get_localzone
 
 import re
-import email
 import pytz
 import sys
 import requests
@@ -83,12 +82,12 @@ class TruStar(object):
             elif isinstance(date_time, str):
                 try:
                     datetime_dt = dateutil.parser.parse(date_time)
-                except Exception:
-                    print("Tried a more general date format, now trying a more specific one.")
+                except Exception as e:
+                    print('dateutil failed to parse the date.', e)
                     try:
                         datetime_dt = datetime.strptime(re.sub(" \+\d\d\d\d", "", date_time), '%a, %d %b %Y %H:%M:%S')
                     except Exception as e:
-                        print(e)
+                        print("UNSUPPORTED DATE FORMAT", e)
             elif isinstance(date_time, datetime):
                 datetime_dt = date_time
 
@@ -253,38 +252,12 @@ class TruStar(object):
     def process_file(source_file):
         if source_file.endswith(('.pdf', '.PDF')):
             txt = TruStar.extract_pdf(source_file)
-        elif source_file.endswith(('.txt', '.csv', '.json')):
+        elif source_file.endswith(('.txt', '.eml', '.csv', '.json')):
             f = open(source_file, 'r')
             txt = f.read()
-        elif source_file.endswith('.eml'):
-            f = open(source_file, 'r')
-            content = f.read()
-            current_email = email.message_from_string(content)
-            txt = ""
-            if current_email.is_multipart():
-                for payload in current_email.get_payload():
-                    txt += payload.get_payload()
-            else:
-                txt = current_email.get_payload()
         else:
             raise ValueError('UNSUPPORTED FILE EXTENSION')
         return txt
-
-    @staticmethod
-    def process_date_from_email(source_file):
-        if source_file.endswith('.eml'):
-            f = open(source_file, 'r')
-            content = f.read()
-            current_email = email.message_from_string(content)
-            headers = current_email._headers
-            date = ""
-            for current_tuple in headers:
-                if current_tuple[0] == 'Date':
-                    date = current_tuple[1]
-        else:
-            raise ValueError('UNSUPPORTED FILE EXTENSION')
-        return date
-
 
     def get_report_url(self, report_id):
         """

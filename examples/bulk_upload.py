@@ -1,15 +1,74 @@
 #!/usr/bin/env python
 
 """
-Submit one or more reports from local files (txt, pdf)
+Submit one or more reports from local files (txt, pdf, eml, csv, json)
 """
 from __future__ import print_function
 
 import argparse
+import email
 import os
 import time
 
 from trustar import TruStar
+
+
+def process_eml(source_file):
+    """
+    Parses the content of a '.eml' file
+    :param source_file: the '.eml' filename
+    :return: the content of the email
+    """
+    if source_file.endswith('.eml'):
+        f = open(source_file, 'r')
+        content = f.read()
+        current_email = email.message_from_string(content)
+        txt = ""
+        if current_email.is_multipart():
+            txt = build_text_from_payload(current_email.get_payload())
+        else:
+            txt = current_email.get_payload()
+    else:
+        raise ValueError('UNSUPPORTED FILE EXTENSION')
+    return txt
+
+
+def build_text_from_payload(payloads, result=""):
+    """
+    Walks through the nodes of the email tree object and returns the content of the email.
+    :param payloads: the tree nodes
+    :param result: the content of the email
+    :return: the content of the email
+    """
+    if type(payloads) is list:
+        for payload in payloads:
+            if type(payload.get_payload()) is str:
+                result += payload.get_payload()
+            else:
+                result += build_text_from_payload(payload.get_payload(), result)
+    else:
+        result += payloads.get_payload()
+    return result
+
+
+def process_date_from_email(source_file):
+    """
+    Returns the received date for '.eml' source files.
+    :param source_file: the '.eml' filename 
+    :return: the received date of the email
+    """
+    if source_file.endswith('.eml'):
+        f = open(source_file, 'r')
+        content = f.read()
+        current_email = email.message_from_string(content)
+        headers = current_email._headers
+        date = ""
+        for current_tuple in headers:
+            if current_tuple[0] == 'Date':
+                date = current_tuple[1]
+    else:
+        raise ValueError('UNSUPPORTED FILE EXTENSION')
+    return date
 
 
 def main():
@@ -47,16 +106,18 @@ def main():
                 print("Processing source file %s " % source_file)
                 try:
                     path = os.path.join(source_report_dir, source_file)
-                    report_body_txt = ts.process_file(path)
                     if path.endswith('.eml'):
-                        email_date = ts.process_date_from_email(path)
+                        report_body_txt = process_eml(path)
+                        email_date = process_date_from_email(path)
+
                         response_json = ts.submit_report(token,
                                                          report_body_txt,
-                                                         "ENCLAVE: " + source_file,
+                                                         source_file,
                                                          email_date,
                                                          enclave=True)
                     else:
-                        response_json = ts.submit_report(token, report_body_txt, "ENCLAVE: " + source_file, enclave=True)
+                        report_body_txt = ts.process_file(path)
+                        response_json = ts.submit_report(token, report_body_txt, source_file, enclave=True)
 
                     # response_json = ts.submit_report(token, report_body_txt, "COMMUNITY: " + file)
                     report_id = response_json['reportId']
