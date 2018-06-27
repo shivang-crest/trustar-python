@@ -22,7 +22,11 @@ class ModelBase(object):
         """
 
         if remove_nones:
-            return {k: v for k, v in self.to_dict().items() if v is not None}
+            dict = {}
+            for k, v in self.to_dict().items():
+                if v:
+                    dict[k] = v
+            return dict
         else:
             raise NotImplementedError()
 
