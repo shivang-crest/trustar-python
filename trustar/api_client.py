@@ -99,7 +99,7 @@ class ApiClient(object):
 
         # raise exception if status code indicates an error
         if 400 <= response.status_code < 600:
-            message = "{} {} Error: {}".format(response.status_code,
+            message = "{0} {1} Error: {2}".format(response.status_code,
                                                "Client" if response.status_code < 500 else "Server",
                                                "unable to get token")
             raise HTTPError(message, response=response)
@@ -174,7 +174,7 @@ class ApiClient(object):
 
             # make request
             response = requests.request(method=method,
-                                        url="{}/{}".format(self.base, path),
+                                        url="{0}/{1}".format(self.base, path),
                                         headers=base_headers,
                                         verify=self.verify,
                                         params=params,
@@ -219,7 +219,7 @@ class ApiClient(object):
                 reason = "unknown cause"
 
             # construct error message
-            message = "{} {} Error: {}".format(response.status_code,
+            message = "{0} {1} Error: {2}".format(response.status_code,
                                                "Client" if response.status_code < 500 else "Server",
                                                reason)
             # raise HTTPError
