@@ -190,12 +190,13 @@ class ReportClient(object):
             raise Exception("Cannot update report without either an ID or an external ID.")
 
         # not allowed to update value of 'reportId', so remove it
-        if 'reportId' in report:
-            report.pop('reportId')
+        report_dict = report.to_dict()
+        if 'reportId' in report_dict:
+            report_dict.pop('reportId')
 
         params = {'idType': id_type}
 
-        data = json.dumps(report.to_dict())
+        data = json.dumps(report_dict)
         self._client.put("reports/%s" % report_id, data=data, params=params)
 
         return report
