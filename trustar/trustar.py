@@ -50,7 +50,7 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         'max_wait_time': 60
     }
 
-    def __init__(self, config_file="trustar.conf", config_role="trustar", config=None):
+    def __init__(self, config_file="trustar.conf", config_role="trustar", config=None, proxies=None):
 
         """
         Constructs and configures the instance.  Initially attempts to use ``config``; if it is ``None``,
@@ -90,6 +90,7 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         :param str config_file: Path to configuration file (conf, json, or yaml).
         :param str config_role: The section in the configuration file to use.
         :param dict config: A dictionary of configuration options.
+        :param dict proxies: A dictionary of proxies.
         """
 
         # attempt to use configuration file if one exists
@@ -117,7 +118,7 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
             self.enclave_ids = [self.enclave_ids]
 
         # initialize api client
-        self._client = ApiClient(config=config)
+        self._client = ApiClient(config=config, proxies=proxies)
 
         # get API version and strip "beta" tag
         # This comes from base url passed in config
