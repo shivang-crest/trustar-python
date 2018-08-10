@@ -21,7 +21,7 @@ class ApiClient(object):
     This class is used to make HTTP requests to the TruStar API.
     """
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, proxies=None):
         """
         Constructs and configures the instance.  Initially attempts to use ``config``; if it is ``None``,
         then attempts to use ``config_file`` instead.
@@ -56,6 +56,7 @@ class ApiClient(object):
         +-------------------------+--------------------------------------------------------+
 
         :param dict config: A dictionary of configuration options.
+        :param dict proxies: A dictionary of proxy configurations
         """
 
         # set properties
@@ -69,6 +70,7 @@ class ApiClient(object):
         self.verify = config.get('verify')
         self.retry = config.get('retry')
         self.max_wait_time = config.get('max_wait_time')
+        self.proxies = proxies
 
         # initialize token property
         self.token = None
@@ -179,6 +181,7 @@ class ApiClient(object):
                                         verify=self.verify,
                                         params=params,
                                         data=data,
+                                        proxies=self.proxies,
                                         **kwargs)
 
             attempted = True
